@@ -1,34 +1,49 @@
 #!/bin/bash
-apt-get update
-apt-get install -y wget tar netcat-openbsd
+# Detect package manager
+if command -v apt-get >/dev/null; then
+  PKG_MANAGER="apt-get"
+  INSTALL_CMD="apt-get update && apt-get install -y"
+  PKG_LIST="wget tar netcat-openbsd"
+elif command -v dnf >/dev/null; then
+  PKG_MANAGER="dnf"
+  INSTALL_CMD="dnf install -y"
+  PKG_LIST="wget tar nc"
+elif command -v yum >/dev/null; then
+  PKG_MANAGER="yum"
+  INSTALL_CMD="yum install -y"
+  PKG_LIST="wget tar nc"
+else
+  echo "Unsupported package manager"
+  exit 1
+fi
+
+$INSTALL_CMD $PKG_LIST
 
 mkdir -p /opt/kanshi-agent
 cd /opt/kanshi-agent
 
-wget https://github.com/kanshi-dev/agent/releases/download/v0.1.0/agent_0.1.0_linux_arm64.tar.gz
-tar -xzf agent_0.1.0_linux_arm64.tar.gz
+# Determine binary architecture
+ARCH="${arch}"
+# Map terraform amd64 to agent linux_amd64 (assuming naming convention)
+if [ "$ARCH" = "amd64" ]; then
+  AGENT_ARCH="linux_amd64"
+elif [ "$ARCH" = "arm64" ]; then
+  AGENT_ARCH="linux_arm64"
+else
+  AGENT_ARCH="linux_amd64" # fallback
+fi
 
-# Create a systemd unit for the Kanshi Agent
-cat <<EOT > /etc/systemd/system/kanshi-agent.service
-[Unit]
-Description=Kanshi Agent
-After=network.target
+wget https://github.com/kanshi-dev/agent/releases/download/v0.1.0/agent_0.1.0_$AGENT_ARCH.tar.gz
+tar -xzf agent_0.1.0_$AGENT_ARCH.tar.gz
 
-[Service]
-Type=simple
-WorkingDirectory=/opt/kanshi-agent
-Environment=KANSHI_CORE_ADDR=${kanshi_server_private_ip}:50051
-ExecStartPre=/usr/bin/bash -c 'until nc -z ${kanshi_server_private_ip} 80; do echo "Waiting for server..."; sleep 5; done'
-ExecStart=/opt/kanshi-agent/kanshi-agent
-Restart=always
-RestartSec=5
-StandardOutput=append:/opt/kanshi-agent/agent.log
-StandardError=append:/opt/kanshi-agent/agent.log
+# Wait for the server to be ready on port 80
+until nc -z ${kanshi_server_private_ip} 80; do
+  echo "Waiting for server at ${kanshi_server_private_ip}:80..."
+  sleep 5
+done
 
-[Install]
-WantedBy=multi-user.target
-EOT
+# Execute the agent
+KANSHI_CORE_ADDR="${kanshi_server_private_ip}:50051" nohup ./kanshi-agent > agent.log 2>&1 &
 
-systemctl daemon-reload
-systemctl enable kanshi-agent
-systemctl start kanshi-agent
+# Ensure it starts on restart
+echo "@reboot cd /opt/kanshi-agent && until nc -z ${kanshi_server_private_ip} 80; do sleep 5; done && export KANSHI_CORE_ADDR=\"${kanshi_server_private_ip}:50051\" && nohup ./kanshi-agent > agent.log 2>&1 &" | crontab -

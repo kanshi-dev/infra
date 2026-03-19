@@ -95,6 +95,37 @@ data "aws_ami" "ubuntu_arm" {
   }
 }
 
+# Amazon Linux 2023 AMI for x86_64
+data "aws_ami" "al2023_x86" {
+  most_recent = true
+  owners      = ["137112412989"] # Amazon
+
+  filter {
+    name   = "name"
+    values = ["al2023-ami-2023*-x86_64"]
+  }
+}
+
+# Amazon Linux 2023 AMI for ARM64
+data "aws_ami" "al2023_arm" {
+  most_recent = true
+  owners      = ["137112412989"] # Amazon
+
+  filter {
+    name   = "name"
+    values = ["al2023-ami-2023*-kernel-6.1-arm64"]
+  }
+}
+
+locals {
+  ami_map = {
+    "ubuntu-amd64"       = data.aws_ami.ubuntu_x86.id
+    "ubuntu-arm64"       = data.aws_ami.ubuntu_arm.id
+    "amazon-linux-amd64" = data.aws_ami.al2023_x86.id
+    "amazon-linux-arm64" = data.aws_ami.al2023_arm.id
+  }
+}
+
 module "kanshi_server" {
   source             = "./modules/ec2"
   instance_name      = "kanshi-server"
@@ -110,15 +141,17 @@ module "kanshi_server" {
 }
 
 module "kanshi_agent" {
+  for_each           = var.agents
   source             = "./modules/ec2"
-  instance_name      = "kanshi-agent"
-  instance_type      = "t4g.micro"
-  ami_id             = data.aws_ami.ubuntu_arm.id
+  instance_name      = each.key
+  instance_type      = each.value.instance_type
+  ami_id             = local.ami_map["${each.value.os}-${each.value.arch}"]
   subnet_id          = module.vpc.public_subnet_ids[1]
   security_group_ids = [aws_security_group.agent_sg.id]
   environment        = var.environment
 
-  user_data          = templatefile("${path.module}/scripts/agent_user_data.sh.tftpl", {
+  user_data = templatefile("${path.module}/scripts/agent_user_data.sh.tftpl", {
     kanshi_server_private_ip = module.kanshi_server.private_ip
+    arch                     = each.value.arch
   })
 }

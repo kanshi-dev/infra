@@ -64,3 +64,29 @@ variable "environment" {
   type        = string
   default     = "production"
 }
+
+variable "agents" {
+  description = "Configuration for Kanshi agents"
+  type = map(object({
+    instance_type = string
+    os            = string # e.g., "ubuntu", "amazon-linux"
+    arch          = string # e.g., "amd64", "arm64"
+  }))
+  default = {
+    "agent-ubuntu-arm" = {
+      instance_type = "t4g.micro"
+      os            = "ubuntu"
+      arch          = "arm64"
+    },
+    "agent-ubuntu-amd" = {
+      instance_type = "t3.micro"
+      os            = "ubuntu"
+      arch          = "amd64"
+    },
+    "agent-al2023-amd" = {
+      instance_type = "t3.micro"
+      os            = "amazon-linux"
+      arch          = "amd64"
+    }
+  }
+}
