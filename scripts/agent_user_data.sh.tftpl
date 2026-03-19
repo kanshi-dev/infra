@@ -1,6 +1,6 @@
 #!/bin/bash
 apt-get update
-apt-get install -y wget tar
+apt-get install -y wget tar netcat-openbsd
 
 mkdir -p /opt/kanshi-agent
 cd /opt/kanshi-agent
@@ -12,7 +12,13 @@ tar -xzf agent_0.1.0_linux_arm64.tar.gz
 # We use the private IP of the server for internal communication if possible, 
 # but since they are in different subnets/SGs (same VPC), we'll use private IP.
 
-export KANSHI_CORE_ADDR="${kanshi_server_private_ip}:50051"
+echo "Waiting for Kanshi server at ${kanshi_server_private_ip} on port 80..."
+until nc -z ${kanshi_server_private_ip} 80; do
+  echo "Kanshi server is not ready yet. Sleeping for 5 seconds..."
+  sleep 5
+done
+
+echo "Kanshi server is ready!"
 
 # Run agent in background
-nohup ./agent > agent.log 2>&1 &
+KANSHI_CORE_ADDR=${kanshi_server_private_ip}:50051 nohup ./kanshi-agent > agent.log 2>&1 &
