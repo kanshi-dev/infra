@@ -1,25 +1,18 @@
 #!/bin/bash
 apt-get update
-apt-get install -y docker.io docker-compose
+apt-get install -y docker.io docker-compose git
 systemctl start docker
 systemctl enable docker
 
 mkdir -p /opt/kanshi
 cd /opt/kanshi
 
+# Clone the demo repo
+git clone https://github.com/kanshi-dev/demo.git .
+
+# Use the provided .env or example
 cat <<EOT > .env
 ${env_file_content}
 EOT
-
-cat <<EOT > core-schema.sql
-${core_schema_content}
-EOT
-
-cat <<EOT > docker-compose.yml
-${docker_compose_content}
-EOT
-
-# Update docker-compose.yml to use the .env and schema we just created
-# (though it already uses them if they are in the same dir)
 
 docker-compose up -d

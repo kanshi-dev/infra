@@ -105,8 +105,6 @@ module "kanshi_server" {
   environment        = var.environment
 
   user_data          = templatefile("${path.module}/scripts/server_user_data.sh.tftpl", {
-    core_schema_content    = file("${path.module}/scripts/core-schema.sql")
-    docker_compose_content = file("${path.module}/scripts/docker-compose.yml")
     env_file_content       = fileexists("${path.module}/scripts/.env") ? file("${path.module}/scripts/.env") : file("${path.module}/scripts/.env.example")
   })
 }
