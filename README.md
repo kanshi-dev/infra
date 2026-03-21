@@ -10,7 +10,7 @@ The deployment consists of two main components:
     *   **TimescaleDB**: Database for storing metrics.
     *   **Core API**: The central processing unit of Kanshi.
     *   **Dashboard**: Web interface for visualizing metrics.
-2.  **Kanshi Agent**: A `t4g.micro` ARM64 EC2 instance running the Kanshi agent, which reports metrics back to the Server.
+2.  **Kanshi Agents**: Multiple EC2 instances (Ubuntu/Amazon Linux, x86_64/ARM64) running the Kanshi agent, which reports metrics back to the Server.
 
 All resources are deployed within a dedicated VPC with public subnets across two availability zones.
 
@@ -18,10 +18,9 @@ All resources are deployed within a dedicated VPC with public subnets across two
 
 *   `main.tf`: Defines the core infrastructure (VPC, Security Groups, and EC2 instances).
 *   `variables.tf`: Configuration variables for ports, environment, and security rules.
+*   `outputs.tf`: Terraform outputs for the deployment.
 *   `modules/`: Contains reusable modules for `vpc` and `ec2`.
 *   `scripts/`:
-    *   `docker-compose.yml`: Docker configuration for the Server services.
-    *   `core-schema.sql`: Initial database schema.
     *   `.env.example`: Environment variables for the database.
     *   `server_user_data.sh.tftpl`: Provisioning script for the Server.
     *   `agent_user_data.sh.tftpl`: Provisioning script for the Agent.
@@ -79,5 +78,5 @@ The security groups are configured with the following ingress rules by default:
 
 After a successful deployment, Terraform will output:
 *   `server_public_ip`: The public IP address of the Kanshi Server.
-*   `agent_public_ip`: The public IP address of the Kanshi Agent.
+*   `agent_public_ips`: A map of the public IP addresses of the Kanshi Agents.
 *   `dashboard_url`: The URL to access the Kanshi Dashboard.
