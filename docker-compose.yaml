@@ -1,0 +1,45 @@
+services:
+  db:
+    image: timescale/timescaledb:latest-pg17
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: kanshi
+      POSTGRES_USER: kanshi
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - kanshi_db:/var/lib/postgresql/data
+    healthcheck:
+      test: [CMD-SHELL, pg_isready -U kanshi]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  core:
+    image: ghcr.io/kanshi-dev/core:${KANSHI_VERSION:-1.0.0}
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DB_HOST: db
+      DB_USER: kanshi
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_NAME: kanshi
+      KANSHI_API_KEY: ${KANSHI_API_KEY}
+      KANSHI_DASHBOARD_KEY: ${KANSHI_DASHBOARD_KEY}
+      KANSHI_ALLOWED_ORIGINS: ${KANSHI_ALLOWED_ORIGINS:-http://localhost:3000,http://127.0.0.1:3000}
+    ports:
+      - "8080:8080"
+      - "50051:50051"
+
+  dashboard:
+    image: ghcr.io/kanshi-dev/dashboard:${KANSHI_VERSION:-1.0.0}
+    restart: unless-stopped
+    depends_on:
+      core:
+        condition: service_healthy
+    ports:
+      - "3000:80"
+
+volumes:
+  kanshi_db:
