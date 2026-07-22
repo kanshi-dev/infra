@@ -2,6 +2,10 @@
 
 This repository contains the Terraform infrastructure for deploying the Kanshi monitoring stack and its remote agents on AWS.
 
+For the canonical self-hosted release stack, copy `.env.example` to `.env`, replace every placeholder, and run `docker compose up -d`. See the [v1 quickstart](https://github.com/kanshi-dev/core/blob/main/QUICKSTART.md).
+
+Kanshi follows semantic versioning from `v1.0.0`. Bug fixes ship in `v1.0.x`, features wait for the next minor release, and breaking changes wait for the next major release. Release notes are generated from merged pull requests. Use the component repositories for support and private security reports. The latest `v1.0.x` release is supported.
+
 ## Architecture Overview
 
 The deployment consists of two main components:
