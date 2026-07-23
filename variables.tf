@@ -27,19 +27,19 @@ variable "environment" {
 variable "core_version" {
   description = "Core container image version"
   type        = string
-  default     = "1.0.0-rc3"
+  default     = "1.0.0"
 }
 
 variable "dashboard_version" {
   description = "Dashboard container image version"
   type        = string
-  default     = "1.0.0-rc4"
+  default     = "1.0.0"
 }
 
 variable "agent_version" {
   description = "Agent release version"
   type        = string
-  default     = "v1.0.0-rc3"
+  default     = "v1.0.0"
 }
 
 variable "agents" {
