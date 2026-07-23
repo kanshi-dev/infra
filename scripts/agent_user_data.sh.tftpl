@@ -1,14 +1,7 @@
 #!/bin/bash
-set -euxo pipefail
+set -euo pipefail
 
-if command -v apt-get >/dev/null; then
-  apt-get update
-  apt-get install -y curl
-elif command -v dnf >/dev/null; then
-  dnf install -y curl
-else
-  yum install -y curl
-fi
+command -v curl >/dev/null
 
 curl -fsSL https://kanshi.dev/install.sh |
   KANSHI_VERSION="${agent_version}" \
