@@ -2,6 +2,21 @@ provider "aws" {
   region = "us-east-1"
 }
 
+resource "random_password" "db" {
+  length  = 32
+  special = false
+}
+
+resource "random_password" "api_key" {
+  length  = 48
+  special = false
+}
+
+resource "random_password" "dashboard_key" {
+  length  = 48
+  special = false
+}
+
 module "vpc" {
   source      = "./modules/vpc"
   environment = var.environment
@@ -40,10 +55,9 @@ resource "aws_security_group_rule" "server_egress" {
   security_group_id = aws_security_group.server_sg.id
 }
 
-# Security group for the Agent
 resource "aws_security_group" "agent_sg" {
   name        = "kanshi-agent-sg"
-  description = "Allow SSH"
+  description = "Kanshi agents"
   vpc_id      = module.vpc.vpc_id
 
   tags = {
@@ -52,16 +66,14 @@ resource "aws_security_group" "agent_sg" {
   }
 }
 
-resource "aws_security_group_rule" "agent_ingress" {
-  for_each = { for idx, rule in var.agent_ingress_rules : idx => rule }
-
-  type              = "ingress"
-  from_port         = each.value.from_port
-  to_port           = each.value.to_port
-  protocol          = each.value.protocol
-  cidr_blocks       = each.value.cidr_blocks
-  description       = each.value.description
-  security_group_id = aws_security_group.agent_sg.id
+resource "aws_security_group_rule" "server_grpc_from_agents" {
+  type                     = "ingress"
+  from_port                = 50051
+  to_port                  = 50051
+  protocol                 = "tcp"
+  source_security_group_id = aws_security_group.agent_sg.id
+  description              = "Core gRPC from Kanshi agents"
+  security_group_id        = aws_security_group.server_sg.id
 }
 
 resource "aws_security_group_rule" "agent_egress" {
@@ -135,8 +147,13 @@ module "kanshi_server" {
   security_group_ids = [aws_security_group.server_sg.id]
   environment        = var.environment
 
-  user_data          = templatefile("${path.module}/scripts/server_user_data.sh.tftpl", {
-    env_file_content       = fileexists("${path.module}/scripts/.env") ? file("${path.module}/scripts/.env") : file("${path.module}/scripts/.env.example")
+  user_data = templatefile("${path.module}/scripts/server_user_data.sh.tftpl", {
+    compose_file_content = file("${path.module}/docker-compose.yaml")
+    core_version         = var.core_version
+    dashboard_version    = var.dashboard_version
+    db_password          = random_password.db.result
+    api_key              = random_password.api_key.result
+    dashboard_key        = random_password.dashboard_key.result
   })
 }
 
@@ -152,6 +169,7 @@ module "kanshi_agent" {
 
   user_data = templatefile("${path.module}/scripts/agent_user_data.sh.tftpl", {
     kanshi_server_private_ip = module.kanshi_server.private_ip
-    arch                     = each.value.arch
+    api_key                  = random_password.api_key.result
+    agent_version            = var.agent_version
   })
 }
