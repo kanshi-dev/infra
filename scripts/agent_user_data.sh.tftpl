@@ -1,70 +1,17 @@
 #!/bin/bash
-# Detect package manager
+set -euxo pipefail
+
 if command -v apt-get >/dev/null; then
-  PKG_MANAGER="apt-get"
-  INSTALL_CMD="apt-get update && apt-get install -y"
-  PKG_LIST="wget tar netcat-openbsd cron"
-  SERVICE_NAME="cron"
+  apt-get update
+  apt-get install -y curl
 elif command -v dnf >/dev/null; then
-  PKG_MANAGER="dnf"
-  INSTALL_CMD="dnf install -y"
-  PKG_LIST="wget tar nc cronie"
-  SERVICE_NAME="crond"
-elif command -v yum >/dev/null; then
-  PKG_MANAGER="yum"
-  INSTALL_CMD="yum install -y"
-  PKG_LIST="wget tar nc cronie"
-  SERVICE_NAME="crond"
+  dnf install -y curl
 else
-  echo "Unsupported package manager"
-  exit 1
+  yum install -y curl
 fi
 
-$INSTALL_CMD $PKG_LIST
-
-# Start and enable cron service
-systemctl enable $SERVICE_NAME
-systemctl start $SERVICE_NAME
-
-mkdir -p /opt/kanshi-agent
-cd /opt/kanshi-agent
-
-# Determine binary architecture
-ARCH="${arch}"
-# Map terraform amd64 to agent linux_amd64 (assuming naming convention)
-if [ "$ARCH" = "amd64" ]; then
-  AGENT_ARCH="linux_amd64"
-elif [ "$ARCH" = "arm64" ]; then
-  AGENT_ARCH="linux_arm64"
-else
-  AGENT_ARCH="linux_amd64" # fallback
-fi
-
-wget https://github.com/kanshi-dev/agent/releases/download/v0.1.0/agent_0.1.0_$AGENT_ARCH.tar.gz
-tar -xzf agent_0.1.0_$AGENT_ARCH.tar.gz
-
-# Create startup script for the agent
-cat <<EOF > /opt/kanshi-agent/start-agent.sh
-#!/bin/bash
-# Wait for the server to be ready on port 80
-# Use a robust PATH for cron
-export PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
-
-until nc -z ${kanshi_server_private_ip} 80; do
-  echo "Waiting for server at ${kanshi_server_private_ip}:80..."
-  sleep 5
-done
-
-# Execute the agent
-export KANSHI_CORE_ADDR="${kanshi_server_private_ip}:50051"
-cd /opt/kanshi-agent
-nohup ./kanshi-agent > agent.log 2>&1 &
-EOF
-
-chmod +x /opt/kanshi-agent/start-agent.sh
-
-# Execute the agent now
-/opt/kanshi-agent/start-agent.sh
-
-# Ensure it starts on restart
-(crontab -l 2>/dev/null; echo "@reboot /opt/kanshi-agent/start-agent.sh") | crontab -
+curl -fsSL https://kanshi.dev/install.sh |
+  KANSHI_VERSION="${agent_version}" \
+  KANSHI_CORE_ADDR="${kanshi_server_private_ip}:50051" \
+  KANSHI_API_KEY="${api_key}" \
+  sh -s -- --systemd

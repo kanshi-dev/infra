@@ -25,9 +25,8 @@ All resources are deployed within a dedicated VPC with public subnets across two
 *   `outputs.tf`: Terraform outputs for the deployment.
 *   `modules/`: Contains reusable modules for `vpc` and `ec2`.
 *   `scripts/`:
-    *   `.env.example`: Environment variables for the database.
-    *   `server_user_data.sh.tftpl`: Provisioning script for the Server.
-    *   `agent_user_data.sh.tftpl`: Provisioning script for the Agent.
+    *   `server_user_data.sh.tftpl`: Server provisioning.
+    *   `agent_user_data.sh.tftpl`: Agent installation through the verified release installer.
 
 ## Prerequisites
 
@@ -36,28 +35,28 @@ All resources are deployed within a dedicated VPC with public subnets across two
 
 ## Deployment Instructions
 
-1.  **Environment Setup**:
-    Copy the example environment file and update it with your desired database credentials:
-    ```bash
-    cp scripts/.env.example scripts/.env
-    ```
-
-2.  **Initialize Terraform**:
+1.  **Initialize Terraform**:
     ```bash
     terraform init
     ```
 
-3.  **Review the Plan**:
+2.  **Review the Plan**:
     ```bash
     terraform plan
     ```
 
-4.  **Apply the Configuration**:
+3.  **Apply the Configuration**:
     ```bash
     terraform apply
     ```
 
-The deployment will automatically use the values from `scripts/.env` for the Kanshi server's environment.
+Terraform generates the database, ingest, and dashboard keys. Retrieve the dashboard key after apply:
+
+```bash
+terraform output -raw dashboard_key
+```
+
+State is local. Keep `terraform.tfstate` private and do not use this configuration as a shared production backend without migrating state to an encrypted remote backend with locking.
 
 ## Security Configuration
 
@@ -67,14 +66,7 @@ The security groups are configured with the following ingress rules by default:
 | Port | Protocol | Description |
 | :--- | :--- | :--- |
 | 80 | TCP | Dashboard |
-| 8080 | TCP | Core API |
-| 50051 | TCP | Core gRPC (used by agents) |
-| 22 | TCP | SSH |
-
-### Agent (kanshi-agent-sg)
-| Port | Protocol | Description |
-| :--- | :--- | :--- |
-| 22 | TCP | SSH |
+Core REST is reachable only through the dashboard proxy. Core gRPC accepts traffic only from instances in the agent security group. Neither server nor agents expose SSH.
 
 *Note: Egress traffic is allowed for all protocols to any destination (0.0.0.0/0).*
 
