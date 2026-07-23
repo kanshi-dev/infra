@@ -2,7 +2,7 @@
 
 Kanshi has two test paths:
 
-- [Local demo](https://github.com/kanshi-dev/demo): builds the current release candidates with Docker Compose.
+- [Local demo](https://github.com/kanshi-dev/demo): pulls the stable release with Docker Compose.
 - Terraform demo in this directory: creates a disposable AWS fleet with one server and three agents.
 
 ## AWS demo architecture
@@ -24,7 +24,7 @@ Only dashboard port `80` is public. Core gRPC `50051` accepts traffic only from 
 ## Deploy
 
 ```sh
-cd deployment/infra
+cd infra
 terraform init
 terraform plan
 terraform apply
