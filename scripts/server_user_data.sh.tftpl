@@ -2,16 +2,11 @@
 set -euo pipefail
 
 apt-get update
-apt-get install -y docker.io docker-compose-v2 git
+apt-get install -y docker.io docker-compose-v2
 systemctl enable --now docker
 
 install -d -m 0755 /opt/kanshi
 cd /opt/kanshi
-
-git clone --depth 1 --branch "v${core_version}" https://github.com/kanshi-dev/core.git src/core
-git clone --depth 1 --branch "v${dashboard_version}" https://github.com/kanshi-dev/dashboard.git src/dashboard
-docker build -t "ghcr.io/kanshi-dev/core:${core_version}" src/core
-docker build -t "ghcr.io/kanshi-dev/dashboard:${dashboard_version}" src/dashboard
 
 cat > docker-compose.yaml <<'COMPOSE'
 ${compose_file_content}
@@ -28,4 +23,3 @@ ENV
 chmod 0600 .env
 
 docker compose up -d
-docker image prune -af

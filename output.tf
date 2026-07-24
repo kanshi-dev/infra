@@ -15,3 +15,8 @@ output "dashboard_key" {
   value       = random_password.dashboard_key.result
   sensitive   = true
 }
+
+output "dashboard_key_command" {
+  description = "Command to reveal the dashboard login key"
+  value       = "terraform output -raw dashboard_key"
+}

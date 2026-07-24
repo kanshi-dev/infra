@@ -37,7 +37,9 @@ terraform output -raw dashboard_url
 terraform output -raw dashboard_key
 ```
 
-The server builds the public Core and Dashboard release tags during first boot, so the dashboard can take several minutes to become available. Agents install from the checksum-verified release installer.
+After apply, Terraform also prints the command needed to reveal the sensitive dashboard key.
+
+The server pulls the versioned public Core and Dashboard images from GHCR during first boot. Agents install from the checksum-verified release installer.
 
 ## Verify
 
