@@ -24,6 +24,7 @@ Only dashboard port `80` is public. Core gRPC `50051` accepts traffic only from 
 ## Deploy
 
 ```sh
+git clone https://github.com/kanshi-dev/infra.git
 cd infra
 terraform init
 terraform plan
