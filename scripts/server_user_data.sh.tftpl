@@ -12,6 +12,10 @@ cat > docker-compose.yaml <<'COMPOSE'
 ${compose_file_content}
 COMPOSE
 
+cat > otel-collector.yaml <<'COLLECTOR'
+${collector_file_content}
+COLLECTOR
+
 cat > .env <<'ENV'
 CORE_VERSION=${core_version}
 DASHBOARD_VERSION=${dashboard_version}

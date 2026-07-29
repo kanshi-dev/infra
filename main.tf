@@ -148,12 +148,13 @@ module "kanshi_server" {
   environment        = var.environment
 
   user_data = templatefile("${path.module}/scripts/server_user_data.sh.tftpl", {
-    compose_file_content = file("${path.module}/docker-compose.yaml")
-    core_version         = var.core_version
-    dashboard_version    = var.dashboard_version
-    db_password          = random_password.db.result
-    api_key              = random_password.api_key.result
-    dashboard_key        = random_password.dashboard_key.result
+    compose_file_content   = file("${path.module}/docker-compose.yaml")
+    collector_file_content = file("${path.module}/otel-collector.yaml")
+    core_version           = var.core_version
+    dashboard_version      = var.dashboard_version
+    db_password            = random_password.db.result
+    api_key                = random_password.api_key.result
+    dashboard_key          = random_password.dashboard_key.result
   })
 }
 
