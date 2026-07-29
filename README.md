@@ -3,15 +3,16 @@
 Kanshi has two test paths:
 
 - [Local demo](https://github.com/kanshi-dev/demo): pulls the stable release with Docker Compose.
-- Terraform demo in this directory: creates a disposable AWS fleet with one server and three agents.
+- Terraform demo in this directory: creates a disposable AWS fleet with one full-stack server and three agents.
 
 ## AWS demo architecture
 
 Terraform creates:
 
 - A dedicated VPC with two public subnets
-- One `t3.small` Ubuntu server running TimescaleDB, Core, and Dashboard
+- One `t3.small` Ubuntu server running TimescaleDB, Core, Dashboard, OpenTelemetry Collector, and Go and Node.js sample services
 - Three agents covering Ubuntu amd64, Ubuntu arm64, and Amazon Linux amd64
+- Continuous checkout traffic that creates distributed traces and correlated logs
 - Generated database, ingest, and dashboard keys
 
 Only dashboard port `80` is public. Core gRPC `50051` accepts traffic only from the agent security group. REST is available through the dashboard proxy. SSH is not exposed.
@@ -40,7 +41,7 @@ terraform output -raw dashboard_key
 
 After apply, Terraform also prints the command needed to reveal the sensitive dashboard key.
 
-The server pulls the versioned public Core and Dashboard images from GHCR during first boot. Agents install from the checksum-verified release installer.
+The server pulls the versioned public Core and Dashboard images from GHCR during first boot. It builds the sample services from the immutable source revision used by the released local demo. Agents install from the checksum-verified release installer.
 
 ## Verify
 
@@ -48,7 +49,14 @@ The server pulls the versioned public Core and Dashboard images from GHCR during
 curl "$(terraform output -raw dashboard_url)"
 ```
 
-After signing in, the dashboard should show all three agents online.
+After signing in, verify:
+
+- Agents shows all three hosts online with CPU and memory data.
+- Services shows `checkout-api` and `payments-api`.
+- Traces shows fresh checkout traces spanning both services.
+- Opening a trace shows correlated logs.
+
+The internal traffic generator creates a checkout every 30 seconds. Sample services and Collector receivers stay private inside the server's Docker network.
 
 ## Destroy
 
@@ -67,6 +75,7 @@ The EC2 root volumes are encrypted and require IMDSv2. Do not widen the security
 ## Repository layout
 
 - `docker-compose.yaml`: server stack
+- `otel-collector.yaml`: authenticated trace and log pipeline
 - `main.tf`, `variables.tf`, `output.tf`: root Terraform configuration
 - `modules/vpc`: VPC resources
 - `modules/ec2`: hardened EC2 instance module
