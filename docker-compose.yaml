@@ -47,7 +47,7 @@ services:
       - ./otel-collector.yaml:/etc/otelcol/config.yaml:ro
 
   checkout:
-    build: "https://github.com/kanshi-dev/demo.git?branch=main&subdir=samples/go&checksum=4f5fb0ce99a07e691b5455754b996b37c4b0f475"
+    build: "https://github.com/kanshi-dev/demo.git?branch=main&subdir=samples/go&checksum=c01c88b979508a96233eab270c72412b970a9caf"
     restart: unless-stopped
     depends_on:
       collector:
@@ -59,7 +59,7 @@ services:
       PAYMENTS_URL: http://payments:8082/charge
 
   payments:
-    build: "https://github.com/kanshi-dev/demo.git?branch=main&subdir=samples/node&checksum=4f5fb0ce99a07e691b5455754b996b37c4b0f475"
+    build: "https://github.com/kanshi-dev/demo.git?branch=main&subdir=samples/node&checksum=c01c88b979508a96233eab270c72412b970a9caf"
     restart: unless-stopped
     depends_on:
       - collector
