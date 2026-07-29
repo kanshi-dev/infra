@@ -13,6 +13,7 @@ Terraform creates:
 - One `t3.small` Ubuntu server running TimescaleDB, Core, Dashboard, OpenTelemetry Collector, and Go and Node.js sample services
 - Three agents covering Ubuntu amd64, Ubuntu arm64, and Amazon Linux amd64
 - Continuous checkout traffic that creates distributed traces and correlated logs
+- An automatic memory alert with signed delivery to a private webhook sink
 - Generated database, ingest, and dashboard keys
 
 Only dashboard port `80` is public. Core gRPC `50051` accepts traffic only from the agent security group. REST is available through the dashboard proxy. SSH is not exposed.
@@ -55,8 +56,9 @@ After signing in, verify:
 - Services shows `checkout-api` and `payments-api`.
 - Traces shows fresh checkout traces spanning both services.
 - Opening a trace shows correlated logs.
+- Alerts shows the enabled `Demo high memory` rule and a delivered firing event after Agent metrics arrive.
 
-The internal traffic generator creates a checkout every 30 seconds. Sample services and Collector receivers stay private inside the server's Docker network.
+The internal traffic generator creates a checkout every 30 seconds. The alert evaluator runs every 10 seconds and triggers when real Agent memory usage exceeds 1 percent. Sample services, Collector receivers, and the webhook sink stay private inside the server's Docker network.
 
 ## Destroy
 
@@ -76,6 +78,7 @@ The EC2 root volumes are encrypted and require IMDSv2. Do not widen the security
 
 - `docker-compose.yaml`: server stack
 - `otel-collector.yaml`: authenticated trace and log pipeline
+- `alert-sink.py`: private signed-webhook receiver
 - `main.tf`, `variables.tf`, `output.tf`: root Terraform configuration
 - `modules/vpc`: VPC resources
 - `modules/ec2`: hardened EC2 instance module
