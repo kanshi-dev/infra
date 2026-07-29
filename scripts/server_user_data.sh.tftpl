@@ -16,13 +16,8 @@ cat > otel-collector.yaml <<'COLLECTOR'
 ${collector_file_content}
 COLLECTOR
 
-cat > alert-sink.py <<'ALERT_SINK'
-${alert_sink_file_content}
-ALERT_SINK
-
-curl --fail --location --output demo-driver.sh \
-  https://raw.githubusercontent.com/kanshi-dev/demo/6ce8da4011d1127c7efde15b32535cf2c4582f76/demo-driver.sh
-chmod 0755 demo-driver.sh
+curl --fail --location --output demo.py \
+  https://raw.githubusercontent.com/kanshi-dev/demo/6ccfc06c02fc2ea3317a25f16ad2a3359d95436d/demo.py
 
 cat > .env <<'ENV'
 CORE_VERSION=${core_version}

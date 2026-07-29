@@ -42,7 +42,7 @@ terraform output -raw dashboard_key
 
 After apply, Terraform also prints the command needed to reveal the sensitive dashboard key.
 
-The server pulls the versioned public Core, Dashboard, and multi-architecture sample images from GHCR during first boot. Agents install from the checksum-verified release installer.
+The server pulls the versioned public Core and Dashboard images plus the latest multi-architecture sample images from GHCR during first boot. Agents install from the checksum-verified release installer.
 
 ## Verify
 
@@ -58,7 +58,7 @@ After signing in, verify:
 - Opening a trace shows correlated logs.
 - Alerts shows the enabled `Demo high memory` rule and a delivered firing event after Agent metrics arrive.
 
-The demo driver is fetched from an immutable demo revision. It creates a checkout every 30 seconds and does not duplicate the alert rule after a restart. The alert evaluator runs every 10 seconds and triggers when real Agent memory usage exceeds 1 percent. Sample services, Collector receivers, and the webhook sink stay private inside the server's Docker network.
+One Python Alpine container receives alert webhooks, creates a checkout every 30 seconds, and does not duplicate the alert rule after a restart. Its script is fetched from an immutable demo revision. The alert evaluator runs every 10 seconds and triggers when real Agent memory usage exceeds 1 percent. Sample services, Collector receivers, and the webhook sink stay private inside the server's Docker network.
 
 ## Destroy
 
@@ -78,7 +78,6 @@ The EC2 root volumes are encrypted and require IMDSv2. Do not widen the security
 
 - `docker-compose.yaml`: server stack
 - `otel-collector.yaml`: authenticated trace and log pipeline
-- `alert-sink.py`: private signed-webhook receiver
 - `main.tf`, `variables.tf`, `output.tf`: root Terraform configuration
 - `modules/vpc`: VPC resources
 - `modules/ec2`: hardened EC2 instance module
