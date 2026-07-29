@@ -28,6 +28,9 @@ services:
       KANSHI_API_KEY: ${KANSHI_API_KEY}
       KANSHI_DASHBOARD_KEY: ${KANSHI_DASHBOARD_KEY}
       KANSHI_ALLOWED_ORIGINS: ${KANSHI_ALLOWED_ORIGINS:-http://localhost:3000,http://127.0.0.1:3000}
+      KANSHI_ALERT_INTERVAL: 10s
+      KANSHI_WEBHOOK_URLS: http://alert-sink:9000
+      KANSHI_WEBHOOK_SECRET: ${KANSHI_WEBHOOK_SECRET}
       KANSHI_TRACE_RETENTION: ${KANSHI_TRACE_RETENTION:-168h}
       KANSHI_LOG_RETENTION: ${KANSHI_LOG_RETENTION:-72h}
     ports:
@@ -78,6 +81,13 @@ services:
       checkout:
         condition: service_started
     command: ["sh", "-c", "while true; do wget -qO- http://checkout:8081/checkout >/dev/null || true; sleep ${DEMO_INTERVAL_SECONDS:-30}; done"]
+
+  alert-sink:
+    image: python:3-alpine
+    restart: unless-stopped
+    command: ["python", "/sink.py"]
+    volumes:
+      - ./alert-sink.py:/sink.py:ro
 
   dashboard:
     image: ghcr.io/kanshi-dev/dashboard:${DASHBOARD_VERSION:-1.2.0}

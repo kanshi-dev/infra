@@ -16,6 +16,10 @@ cat > otel-collector.yaml <<'COLLECTOR'
 ${collector_file_content}
 COLLECTOR
 
+cat > alert-sink.py <<'ALERT_SINK'
+${alert_sink_file_content}
+ALERT_SINK
+
 cat > .env <<'ENV'
 CORE_VERSION=${core_version}
 DASHBOARD_VERSION=${dashboard_version}
@@ -23,6 +27,7 @@ DASHBOARD_PORT=80
 DB_PASSWORD=${db_password}
 KANSHI_API_KEY=${api_key}
 KANSHI_DASHBOARD_KEY=${dashboard_key}
+KANSHI_WEBHOOK_SECRET=${webhook_secret}
 ENV
 chmod 0600 .env
 
