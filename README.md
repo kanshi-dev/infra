@@ -12,8 +12,8 @@ Terraform creates:
 - A dedicated VPC with two public subnets
 - One `t3.small` Ubuntu server running TimescaleDB, Core, Dashboard, OpenTelemetry Collector, and Go and Node.js sample services
 - Three agents covering Ubuntu amd64, Ubuntu arm64, and Amazon Linux amd64
-- Continuous checkout traffic that creates distributed traces and correlated logs
-- An automatic memory alert with signed delivery to a private webhook sink
+- One Alpine demo driver that creates the memory alert when missing and continuously generates checkout traffic
+- Distributed traces, correlated logs, and signed alert delivery to a private webhook sink
 - Generated database, ingest, and dashboard keys
 
 Only dashboard port `80` is public. Core gRPC `50051` accepts traffic only from the agent security group. REST is available through the dashboard proxy. SSH is not exposed.
@@ -58,7 +58,7 @@ After signing in, verify:
 - Opening a trace shows correlated logs.
 - Alerts shows the enabled `Demo high memory` rule and a delivered firing event after Agent metrics arrive.
 
-The internal traffic generator creates a checkout every 30 seconds. The alert evaluator runs every 10 seconds and triggers when real Agent memory usage exceeds 1 percent. Sample services, Collector receivers, and the webhook sink stay private inside the server's Docker network.
+The demo driver is fetched from the same immutable demo revision as the sample services. It creates a checkout every 30 seconds and does not duplicate the alert rule after a restart. The alert evaluator runs every 10 seconds and triggers when real Agent memory usage exceeds 1 percent. Sample services, Collector receivers, and the webhook sink stay private inside the server's Docker network.
 
 ## Destroy
 
