@@ -2,7 +2,7 @@
 set -euo pipefail
 
 apt-get update
-apt-get install -y curl docker.io docker-compose-v2
+apt-get install -y docker.io docker-compose-v2
 systemctl enable --now docker
 
 install -d -m 0755 /opt/kanshi
@@ -15,9 +15,6 @@ COMPOSE
 cat > otel-collector.yaml <<'COLLECTOR'
 ${collector_file_content}
 COLLECTOR
-
-curl --fail --location --output demo.py \
-  https://raw.githubusercontent.com/kanshi-dev/demo/6ccfc06c02fc2ea3317a25f16ad2a3359d95436d/demo.py
 
 cat > .env <<'ENV'
 CORE_VERSION=${core_version}
