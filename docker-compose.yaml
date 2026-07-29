@@ -28,9 +28,48 @@ services:
       KANSHI_API_KEY: ${KANSHI_API_KEY}
       KANSHI_DASHBOARD_KEY: ${KANSHI_DASHBOARD_KEY}
       KANSHI_ALLOWED_ORIGINS: ${KANSHI_ALLOWED_ORIGINS:-http://localhost:3000,http://127.0.0.1:3000}
+      KANSHI_TRACE_RETENTION: ${KANSHI_TRACE_RETENTION:-168h}
+      KANSHI_LOG_RETENTION: ${KANSHI_LOG_RETENTION:-72h}
     ports:
       - "8080:8080"
       - "50051:50051"
+
+  collector:
+    image: otel/opentelemetry-collector:0.157.0
+    restart: unless-stopped
+    command: ["--config=/etc/otelcol/config.yaml"]
+    depends_on:
+      core:
+        condition: service_healthy
+    environment:
+      KANSHI_API_KEY: ${KANSHI_API_KEY}
+    volumes:
+      - ./otel-collector.yaml:/etc/otelcol/config.yaml:ro
+
+  checkout:
+    build: "https://github.com/kanshi-dev/demo.git?branch=main&subdir=samples/go&checksum=4f5fb0ce99a07e691b5455754b996b37c4b0f475"
+    restart: unless-stopped
+    depends_on:
+      collector:
+        condition: service_started
+      payments:
+        condition: service_healthy
+    environment:
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://collector:4317
+      PAYMENTS_URL: http://payments:8082/charge
+
+  payments:
+    build: "https://github.com/kanshi-dev/demo.git?branch=main&subdir=samples/node&checksum=4f5fb0ce99a07e691b5455754b996b37c4b0f475"
+    restart: unless-stopped
+    depends_on:
+      - collector
+    environment:
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://collector:4317
+    healthcheck:
+      test: ["CMD", "node", "-e", "const s=require('node:net').connect(8082,'127.0.0.1');s.on('connect',()=>{s.end();process.exit(0)});s.on('error',()=>process.exit(1))"]
+      interval: 2s
+      timeout: 2s
+      retries: 15
 
   dashboard:
     image: ghcr.io/kanshi-dev/dashboard:${DASHBOARD_VERSION:-1.2.0}
