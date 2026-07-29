@@ -42,7 +42,7 @@ terraform output -raw dashboard_key
 
 After apply, Terraform also prints the command needed to reveal the sensitive dashboard key.
 
-The server pulls the versioned public Core and Dashboard images plus the latest multi-architecture sample images from GHCR during first boot. Agents install from the checksum-verified release installer.
+The server pulls the versioned public Core and Dashboard images plus the latest multi-architecture demo images from GHCR during first boot. Agents install from the checksum-verified release installer.
 
 ## Verify
 
@@ -58,7 +58,7 @@ After signing in, verify:
 - Opening a trace shows correlated logs.
 - Alerts shows the enabled `Demo high memory` rule and a delivered firing event after Agent metrics arrive.
 
-One Python Alpine container receives alert webhooks, creates a checkout every 30 seconds, and does not duplicate the alert rule after a restart. Its script is fetched from an immutable demo revision. The alert evaluator runs every 10 seconds and triggers when real Agent memory usage exceeds 1 percent. Sample services, Collector receivers, and the webhook sink stay private inside the server's Docker network.
+The Demo Driver image receives alert webhooks, creates a checkout every 30 seconds, and does not duplicate the alert rule after a restart. The alert evaluator runs every 10 seconds and triggers when real Agent memory usage exceeds 1 percent. Sample services, Collector receivers, and the Demo Driver stay private inside the server's Docker network.
 
 ## Destroy
 
