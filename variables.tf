@@ -33,7 +33,7 @@ variable "core_version" {
 variable "dashboard_version" {
   description = "Dashboard container image version"
   type        = string
-  default     = "1.2.0"
+  default     = "1.2.1"
 }
 
 variable "agent_version" {

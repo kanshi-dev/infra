@@ -99,7 +99,7 @@ services:
       - ./demo-driver.sh:/demo-driver.sh:ro
 
   dashboard:
-    image: ghcr.io/kanshi-dev/dashboard:${DASHBOARD_VERSION:-1.2.0}
+    image: ghcr.io/kanshi-dev/dashboard:${DASHBOARD_VERSION:-1.2.1}
     restart: unless-stopped
     depends_on:
       core:
