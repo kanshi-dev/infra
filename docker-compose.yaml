@@ -15,7 +15,7 @@ services:
       retries: 20
 
   core:
-    image: ghcr.io/kanshi-dev/core:${CORE_VERSION:-1.1.0}
+    image: ghcr.io/kanshi-dev/core:${CORE_VERSION:-1.2.1}
     restart: unless-stopped
     depends_on:
       db:
@@ -33,7 +33,7 @@ services:
       - "50051:50051"
 
   dashboard:
-    image: ghcr.io/kanshi-dev/dashboard:${DASHBOARD_VERSION:-1.1.0}
+    image: ghcr.io/kanshi-dev/dashboard:${DASHBOARD_VERSION:-1.2.0}
     restart: unless-stopped
     depends_on:
       core:
