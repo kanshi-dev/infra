@@ -20,11 +20,9 @@ cat > alert-sink.py <<'ALERT_SINK'
 ${alert_sink_file_content}
 ALERT_SINK
 
-install -d -m 0755 demo-source
-curl --fail --location \
-  https://github.com/kanshi-dev/demo/archive/a106fe348628dfebd7819e8b32554de46b668bc7.tar.gz |
-  tar -xz --strip-components=1 -C demo-source
-install -m 0755 demo-source/demo-driver.sh demo-driver.sh
+curl --fail --location --output demo-driver.sh \
+  https://raw.githubusercontent.com/kanshi-dev/demo/6ce8da4011d1127c7efde15b32535cf2c4582f76/demo-driver.sh
+chmod 0755 demo-driver.sh
 
 cat > .env <<'ENV'
 CORE_VERSION=${core_version}
