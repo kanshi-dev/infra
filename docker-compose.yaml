@@ -89,6 +89,26 @@ services:
     volumes:
       - ./alert-sink.py:/sink.py:ro
 
+  demo-alert-setup:
+    image: alpine:3.23
+    restart: on-failure
+    depends_on:
+      core:
+        condition: service_healthy
+      alert-sink:
+        condition: service_started
+    environment:
+      KANSHI_DASHBOARD_KEY: ${KANSHI_DASHBOARD_KEY}
+    command:
+      - sh
+      - -ec
+      - |
+        wget -qO- \
+          --header "Authorization: Bearer $${KANSHI_DASHBOARD_KEY}" \
+          --header "Content-Type: application/json" \
+          --post-data '{"name":"Demo high memory","metric":"mem.used_percent","comparator":"gt","threshold":1,"enabled":true}' \
+          http://core:8080/api/v1/alerts/rules >/dev/null
+
   dashboard:
     image: ghcr.io/kanshi-dev/dashboard:${DASHBOARD_VERSION:-1.2.0}
     restart: unless-stopped
