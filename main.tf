@@ -157,6 +157,7 @@ module "kanshi_server" {
     collector_file_content = file("${path.module}/otel-collector.yaml")
     core_version           = var.core_version
     dashboard_version      = var.dashboard_version
+    agent_version          = var.agent_version
     db_password            = random_password.db.result
     api_key                = random_password.api_key.result
     dashboard_key          = random_password.dashboard_key.result

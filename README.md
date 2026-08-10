@@ -3,7 +3,7 @@
 Kanshi has two test paths:
 
 - [Local demo](https://github.com/kanshi-dev/demo): pulls the stable release with Docker Compose.
-- Terraform demo in this directory: creates a disposable AWS fleet with one full-stack server and three agents.
+- Terraform demo in this directory: creates a disposable AWS fleet with one full-stack server and four agents.
 
 ## AWS demo architecture
 
@@ -11,7 +11,7 @@ Terraform creates:
 
 - A dedicated VPC with two public subnets
 - One `t3.small` Ubuntu server running TimescaleDB, Core, Dashboard, OpenTelemetry Collector, and Go and Node.js sample services
-- Three agents covering Ubuntu amd64, Ubuntu arm64, and Amazon Linux amd64
+- Four agents: one on the application server plus Ubuntu amd64, Ubuntu arm64, and Amazon Linux amd64 hosts
 - One Alpine demo driver that creates the memory alert when missing and continuously generates checkout traffic
 - Distributed traces, correlated logs, and signed alert delivery to a private webhook sink
 - Generated database, ingest, and dashboard keys
@@ -52,11 +52,14 @@ curl "$(terraform output -raw dashboard_url)"
 
 After signing in, verify:
 
-- Agents shows all three hosts online with CPU and memory data.
+- Fleet shows all four hosts online with CPU, memory, disk, and network history.
+- The `kanshi-server` Agent shows current process telemetry.
 - Services shows `checkout-api` and `payments-api`.
+- Service and trace host links navigate to the `kanshi-server` Agent through `host.name`.
 - Traces shows fresh checkout traces spanning both services.
 - Opening a trace shows correlated logs.
 - Alerts shows the enabled `Demo high memory` rule and a delivered firing event after Agent metrics arrive.
+- The Dashboard works at desktop and mobile widths in both Light and Dark themes.
 
 The Demo Driver image receives alert webhooks, creates a checkout every 30 seconds, and does not duplicate the alert rule after a restart. The alert evaluator runs every 10 seconds and triggers when real Agent memory usage exceeds 1 percent. Sample services, Collector receivers, and the Demo Driver stay private inside the server's Docker network.
 

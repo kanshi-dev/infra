@@ -4,6 +4,7 @@ set -euo pipefail
 apt-get update
 apt-get install -y docker.io docker-compose-v2
 systemctl enable --now docker
+hostnamectl set-hostname kanshi-server
 
 install -d -m 0755 /opt/kanshi
 cd /opt/kanshi
@@ -28,3 +29,10 @@ ENV
 chmod 0600 .env
 
 docker compose up -d
+
+curl -fsSL https://kanshi.dev/install.sh |
+  KANSHI_VERSION="${agent_version}" \
+  KANSHI_CORE_ADDR="127.0.0.1:50051" \
+  KANSHI_API_KEY="${api_key}" \
+  KANSHI_PROCESS_METRICS="true" \
+  sh -s -- --systemd
