@@ -60,6 +60,7 @@ services:
         condition: service_healthy
     environment:
       OTEL_EXPORTER_OTLP_ENDPOINT: http://collector:4317
+      OTEL_RESOURCE_ATTRIBUTES: host.name=kanshi-server
       PAYMENTS_URL: http://payments:8082/charge
 
   payments:
@@ -70,6 +71,7 @@ services:
       - collector
     environment:
       OTEL_EXPORTER_OTLP_ENDPOINT: http://collector:4317
+      OTEL_RESOURCE_ATTRIBUTES: host.name=kanshi-server
     healthcheck:
       test: ["CMD", "node", "-e", "const s=require('node:net').connect(8082,'127.0.0.1');s.on('connect',()=>{s.end();process.exit(0)});s.on('error',()=>process.exit(1))"]
       interval: 2s
