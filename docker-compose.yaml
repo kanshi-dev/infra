@@ -62,6 +62,8 @@ services:
       OTEL_EXPORTER_OTLP_ENDPOINT: http://collector:4317
       OTEL_RESOURCE_ATTRIBUTES: host.name=kanshi-server
       PAYMENTS_URL: http://payments:8082/charge
+    ports:
+      - "127.0.0.1:6060:6060"
 
   payments:
     image: ghcr.io/kanshi-dev/demo-payments:latest
