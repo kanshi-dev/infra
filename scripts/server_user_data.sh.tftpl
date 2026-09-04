@@ -35,4 +35,5 @@ curl -fsSL https://kanshi.dev/install.sh |
   KANSHI_CORE_ADDR="127.0.0.1:50051" \
   KANSHI_API_KEY="${api_key}" \
   KANSHI_PROCESS_METRICS="true" \
+  KANSHI_PPROF_DISCOVERY="checkout=http://127.0.0.1:6059-6061" \
   sh -s -- --systemd

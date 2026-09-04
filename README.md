@@ -17,6 +17,7 @@ Terraform creates:
 - Generated database, ingest, and dashboard keys
 
 Only dashboard port `80` is public. Core gRPC `50051` accepts traffic only from the agent security group. REST is available through the dashboard proxy. SSH is not exposed.
+Checkout pprof port `6060` is bound only to server loopback. The host Agent discovers the approved `checkout` target across `6059-6061`; no profiling port is reachable from the VPC or internet.
 
 ## Requirements
 
@@ -54,6 +55,7 @@ After signing in, verify:
 
 - Fleet shows all four hosts online with CPU, memory, disk, and network history.
 - The `kanshi-server` Agent shows current process telemetry.
+- The `kanshi-server` Agent Profiles tab discovers `checkout` and completes a CPU capture.
 - Services shows `checkout-api` and `payments-api`.
 - Service and trace host links navigate to the `kanshi-server` Agent through `host.name`.
 - Traces shows fresh checkout traces spanning both services.
